@@ -1,218 +1,329 @@
-# LLM 기반 리포트 해설 가이드
+# 🤖 LLM 기능 가이드
 
-## 개요
+## 📌 중요: LLM은 선택 기능입니다
 
-Claude API를 사용하여 자연어 해설을 자동 생성하는 기능입니다. 기계적인 수치 나열 대신 전문 애널리스트처럼 읽기 쉬운 설명을 제공합니다.
+이 프로그램은 **LLM 없이도 완벽히 작동**합니다!
 
-## 기능
+- **LLM 비활성화** (기본): 기술 지표 분석 + 템플릿 코멘트 제공
+- **LLM 활성화**: 위 기능 + Claude API 기반 자연어 해설 추가
 
-### 1. 종목별 상세 분석
-각 종목에 대해 2-3문장의 자연스러운 해설을 생성합니다.
+## 🚀 빠른 시작
 
-**LLM 비활성화 시**:
-```
-과매수 80%, 매도 고려 골든크로스, 강세
-```
+### 1단계: API 키 발급
 
-**LLM 활성화 시**:
-```
-삼성전자는 볼린저 밴드 기준 과매수 구간에 진입하여 단기 조정 가능성이 높아 보입니다. 
-다만 일목균형표에서 골든크로스가 나타나며 중장기 상승 추세는 유지되고 있어, 
-단기 차익 실현 후 재진입을 고려하는 전략이 적절할 것으로 판단됩니다.
-```
+1. [Anthropic Console](https://console.anthropic.com/) 방문
+2. 회원가입 (이메일 인증 필요)
+3. **$5 무료 크레딧** 자동 제공
+4. API Keys 메뉴에서 새 키 생성
+5. `sk-ant-api...` 형식의 키 복사
 
-### 2. 시장 전체 시황 요약
-전체 종목의 분석 결과를 바탕으로 시장 동향을 요약합니다.
+**예상 비용:**
+- claude-3-5-haiku: ~$0.003/종목
+- 10개 종목 일일 분석: ~$0.03/일 = ~$0.90/월
+- $5 크레딧으로 약 5-6개월 사용 가능
 
-**LLM 비활성화 시**:
-```
-한국 시장 전체 2개 종목 중 1개 종목이 강한 매수 신호를 보이고 있습니다.
-```
+### 2단계: 환경변수 설정
 
-**LLM 활성화 시**:
-```
-오늘 한국 주식 시장은 종목별 차별화가 두드러집니다. 
-조선업종의 한화오션이 기술적 지표상 강한 매수 신호를 보이며 반등 모멘텀을 확보한 반면, 
-반도체 대장주인 삼성전자는 단기 과열 구간에 진입하여 차익 실현 압력이 예상됩니다. 
-투자자들은 업종별 강약을 고려한 선별적 접근이 필요해 보입니다.
-```
-
-## 설정 방법
-
-### 1. Anthropic API 키 발급
-
-⚠️ **중요**: OpenClaw의 OAuth token은 Anthropic 공식 API에서 지원하지 않습니다!  
-별도로 API 키를 발급받아야 합니다.
-
-1. https://console.anthropic.com/ 접속
-2. 회원가입 및 로그인
-3. API Keys 메뉴에서 새 키 생성
-4. 키 복사 (예: `sk-ant-api03-...`)
-
-### 2. 환경 변수 설정
-
-#### Linux/Mac
+**Linux/Mac:**
 ```bash
-# ~/.bashrc 또는 ~/.zshrc에 추가
-export ANTHROPIC_API_KEY="sk-ant-api03-..."
+export ANTHROPIC_API_KEY=sk-ant-api-여기에-당신의-키-입력
+```
 
-# 적용
+**Windows (PowerShell):**
+```powershell
+$env:ANTHROPIC_API_KEY="sk-ant-api-여기에-당신의-키-입력"
+```
+
+**영구 설정 (Linux/Mac ~/.bashrc 또는 ~/.zshrc):**
+```bash
+echo 'export ANTHROPIC_API_KEY=sk-ant-api-여기에-당신의-키-입력' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-#### Windows (PowerShell)
-```powershell
-# 사용자 환경 변수 설정
-[System.Environment]::SetEnvironmentVariable('ANTHROPIC_API_KEY', 'sk-ant-api03-...', 'User')
+### 3단계: 설정 파일 수정
 
-# 현재 세션만
-$env:ANTHROPIC_API_KEY="sk-ant-api03-..."
-```
+`config/report.yml` 편집:
 
-#### 임시 설정 (한 번만 사용)
-```bash
-ANTHROPIC_API_KEY="sk-ant-api03-..." python3 main.py -m kr
-```
-
-### 3. 설정 파일 수정
-
-`config/report.yml`:
 ```yaml
-# LLM 기반 해설 생성 활성화
-use_llm: true
+# LLM 기반 해설 생성 (Claude API)
+use_llm: true  # false → true로 변경
 
-# 모델 선택 (haiku가 더 빠르고 저렴)
-llm_model: "claude-3-5-haiku-20241022"
-# llm_model: "claude-3-5-sonnet-20241022"  # 더 높은 품질
+llm_model: "claude-3-5-haiku-20241022"  # 빠르고 저렴한 모델 (권장)
+# llm_model: "claude-3-5-sonnet-20241022"  # 더 정확하지만 15배 비싼 모델
 ```
 
-### 4. 실행
+### 4단계: 실행
+
 ```bash
 cd src
-python3 main.py -m kr
+python main.py -m kr
 ```
 
-**출력 예시**:
-```
-✅ Claude API 연결 성공 (모델: claude-3-5-haiku-20241022)
-📊 KR 시장 분석 시작 (2026-02-10)
-...
-✅ 리포트 저장: ../reports/kr_2026-02-10.md
-```
+LLM이 활성화되면 리포트에 자연어 해설이 추가됩니다.
 
-## 모델 선택
+## 🔍 LLM 활성화 전/후 비교
 
-| 모델 | 속도 | 비용 | 품질 | 추천 용도 |
-|------|------|------|------|----------|
-| **claude-3-5-haiku-20241022** | 빠름 | 저렴 | ⭐⭐⭐⭐ | 일일 리포트 (권장) |
-| **claude-3-5-sonnet-20241022** | 느림 | 비쌈 | ⭐⭐⭐⭐⭐ | 주간/월간 심층 분석 |
+### 기본 모드 (LLM 비활성화)
 
-## 비용
-
-### Haiku (권장)
-- **입력**: $0.25 / 1M tokens
-- **출력**: $1.25 / 1M tokens
-
-**예상 비용** (종목 10개 기준):
-- 종목별 분석: ~200 tokens × 10 = 2,000 tokens 출력
-- 시황 요약: ~500 tokens 출력
-- **총 비용**: ~$0.003 (약 4원/리포트)
-
-### Sonnet
-- **입력**: $3 / 1M tokens
-- **출력**: $15 / 1M tokens
-- **총 비용**: ~$0.04 (약 50원/리포트)
-
-## 동작 방식
-
-### 프롬프트 예시 (종목 분석)
-```
-당신은 주식 애널리스트입니다. 다음 기술적 분석 결과를 바탕으로 
-투자자가 이해하기 쉽게 해설해주세요.
-
-종목: 삼성전자 (005930)
-현재가: 165,800원
-등락률: -0.36%
-
-볼린저 밴드 분석:
-- 점수: 1.0/4.0
-- 코멘트: 과매수 80%, 매도 고려
-
-일목균형표 분석:
-- 점수: 4.0/4.0
-- 코멘트: 골든크로스, 강세
-
-종합 평가: 👌 (2.5/4.0)
-
-2-3문장으로 간결하게 설명하되, 투자 시사점을 포함해주세요.
+```markdown
+| 종목명 | 볼린저밴드 | 일목균형표 | 평가 | 기타 |
+|--------|-----------|-----------|------|------|
+| 삼성전자 | 🔴 | 🟢 | 👌 | 💰 165,800원 | 과매수 80%, 매도 고려 | 골든크로스, 강세 |
 ```
 
-### 에러 처리
+### LLM 모드 (활성화)
 
-API 호출 실패 시 자동으로 Fallback (기본 코멘트)으로 전환됩니다:
+```markdown
+| 종목명 | 볼린저밴드 | 일목균형표 | 평가 | 기타 |
+|--------|-----------|-----------|------|------|
+| 삼성전자 | 🔴 | 🟢 | 👌 | 💰 165,800원 |
+
+💬 **AI 분석:**
+주가가 볼린저 밴드 상단(80%)에 위치하여 단기 과열 신호가 감지됩니다. 
+일목균형표는 골든크로스와 구름 위 위치로 중장기 상승 추세를 시사하지만, 
+단기적으로는 조정 가능성을 염두에 두어야 합니다. 
+현재가 근처에서 일부 차익실현 후 재진입 타이밍을 노리는 전략을 고려해볼 수 있습니다.
+```
+
+## ⚙️ 설정 옵션
+
+### config/report.yml
+
+```yaml
+# LLM 기능 활성화/비활성화
+use_llm: false
+
+# 사용할 모델 선택
+llm_model: "claude-3-5-haiku-20241022"
+
+# ⚠️ 사용 불가 (Anthropic API 정책)
+use_openclaw_token: false  # OpenClaw OAuth 토큰은 지원 안 함
+```
+
+### 모델 선택 가이드
+
+| 모델 | 속도 | 비용 | 품질 | 추천 |
+|------|------|------|------|------|
+| claude-3-5-haiku-20241022 | 빠름 | $0.003 | 좋음 | ⭐ 일일 분석 |
+| claude-3-5-sonnet-20241022 | 느림 | $0.045 | 매우 좋음 | 특별 분석 |
+
+**권장:** haiku 모델이 가성비가 뛰어나며, 주식 분석에 충분한 품질을 제공합니다.
+
+## 🛠️ 구현 세부사항
+
+### LLM 호출 흐름
+
+1. **데이터 수집**: FinanceDataReader → 주가 데이터
+2. **기술 분석**: BollingerEvaluator, IchimokuEvaluator → 점수/코멘트
+3. **LLM 해설 생성** (활성화 시):
+   - `ClaudeCommentGenerator.generate_comment()` 호출
+   - 종목 정보 + 평가 결과를 구조화된 프롬프트로 변환
+   - Claude API 호출 (anthropic SDK)
+   - 자연어 해설 생성
+4. **리포트 작성**: Markdown/HTML 리포터 → 최종 리포트
+
+### 프롬프트 구조
 
 ```python
-⚠️  Claude API 호출 실패 (삼성전자): timeout
-# → 기본 코멘트 사용: "과매수 80%, 매도 고려 골든크로스, 강세"
+# reporters/llm_generator.py의 _build_prompt()
+f"""당신은 전문 주식 애널리스트입니다.
+다음 종목의 기술적 분석 결과를 바탕으로 간결하고 명확한 해설을 작성하세요.
+
+종목: {stock_name} ({stock_code})
+현재가: {price}원
+
+볼린저밴드 분석:
+- 점수: {bb_score}
+- 평가: {bb_emoji} {bb_comment}
+
+일목균형표 분석:
+- 점수: {ichi_score}
+- 평가: {ichi_emoji} {ichi_comment}
+
+요구사항:
+1. 2-3문장으로 간결하게 작성
+2. 투자 관점에서 실용적인 인사이트 제공
+3. 기술적 용어는 쉽게 풀어서 설명
+4. 면책 조항 불필요 (이미 리포트에 포함)
+"""
 ```
 
-## 리포트 비교
+### 에러 핸들링
 
-### Markdown (LLM 활성화)
-```markdown
-## 💡 시황 요약
+```python
+try:
+    # Claude API 호출
+    response = client.messages.create(...)
+    return response.content[0].text
+except Exception as e:
+    # LLM 실패 시 자동으로 기본 템플릿 코멘트 사용
+    return self._fallback_comment(stock_info, eval_results)
+```
 
-- 총 2개 종목 분석
-- 강한 매수 신호 🔥: 1개
-- 중립/관망 👌: 1개
+**Fallback 동작:**
+- API 키 없음 → 기본 템플릿 사용
+- API 호출 실패 → 기본 템플릿 사용
+- 네트워크 오류 → 기본 템플릿 사용
+- **프로그램은 중단되지 않고 계속 실행됩니다**
 
-### 💬 시장 분석
-오늘 한국 주식 시장은 종목별 차별화가 두드러집니다. 
-조선업종의 한화오션이 기술적 지표상 강한 매수 신호를 보이며...
+## ❓ 자주 묻는 질문
+
+### Q1: OpenClaw OAuth 토큰을 사용할 수 없나요?
+
+**A:** 아니요, 사용할 수 없습니다.
+
+**이유:**
+- Anthropic의 공개 API는 OAuth 토큰을 지원하지 않습니다
+- OpenClaw 내부에서는 OAuth 토큰으로 Claude API를 호출하지만, 이는 OpenClaw의 자체 OAuth 인프라를 통해서만 가능합니다
+- 외부 Python 스크립트는 반드시 API 키를 사용해야 합니다
+
+**OpenClaw 내부 vs 외부:**
+```
+OpenClaw 내부 (OK):
+  agent.getAuthenticatedAPI("anthropic") → OAuth 토큰 사용
+  
+외부 Python (NO):
+  anthropic.Anthropic(api_key=...) → API 키만 가능
+```
+
+**해결책:**
+1. Anthropic Console에서 API 키 발급 (권장 ⭐)
+2. OpenClaw의 sessions_spawn을 통해 LLM 호출 위임 (고급)
+
+### Q2: 비용이 얼마나 드나요?
+
+**A:** 매우 저렴합니다.
+
+**실제 사용량 (claude-3-5-haiku 기준):**
+- 1개 종목 분석: ~$0.003
+- 10개 종목 일일 분석: ~$0.03
+- 월간 (30일): ~$0.90
+- **$5 무료 크레딧으로 약 5-6개월 사용 가능**
+
+**sonnet 모델 사용 시:**
+- 1개 종목: ~$0.045
+- 10개 종목 일일: ~$0.45
+- 월간: ~$13.50
+
+**권장:** haiku로 충분합니다.
+
+### Q3: LLM 없이 사용해도 괜찮나요?
+
+**A:** 네, 완벽히 괜찮습니다!
+
+LLM 비활성화 시에도:
+- ✅ 볼린저밴드 분석
+- ✅ 일목균형표 분석
+- ✅ 점수 기반 종합 평가
+- ✅ 기본 템플릿 코멘트
+- ✅ Markdown/HTML 리포트
+
+**LLM은 "nice-to-have"** 추가 기능입니다.
+
+### Q4: API 키를 코드에 하드코딩해도 되나요?
+
+**A:** 절대 안 됩니다! ⚠️
+
+```python
+# ❌ 나쁜 예
+client = anthropic.Anthropic(api_key="sk-ant-api-...")
+
+# ✅ 좋은 예
+import os
+api_key = os.getenv("ANTHROPIC_API_KEY")
+client = anthropic.Anthropic(api_key=api_key)
+```
+
+**이유:**
+- Git에 실수로 푸시될 수 있음
+- 키가 노출되면 누구나 당신의 크레딧 사용 가능
+- 보안 모범 사례: 환경변수 사용
+
+### Q5: API 키가 유출되었어요!
+
+**A:** 즉시 조치:
+
+1. [Anthropic Console](https://console.anthropic.com/settings/keys) 접속
+2. 해당 키 삭제 (Revoke)
+3. 새 키 생성
+4. 환경변수 업데이트
+
+## 🔐 보안 권장사항
+
+1. **환경변수 사용**: 코드에 절대 하드코딩 금지
+2. **Git 제외**: `.gitignore`에 키 파일 추가
+3. **권한 관리**: 키를 파일로 저장 시 `chmod 600` 설정
+4. **정기 교체**: 3-6개월마다 키 교체
+5. **모니터링**: 사용량 주기적 확인
+
+## 📊 성능 최적화
+
+### 병렬 처리 (향후 구현)
+
+현재는 종목별로 순차 처리하지만, 다음과 같이 개선 가능:
+
+```python
+# 미래 개선안
+import asyncio
+from anthropic import AsyncAnthropic
+
+async def generate_comments_batch(stocks):
+    client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    tasks = [generate_single(client, stock) for stock in stocks]
+    return await asyncio.gather(*tasks)
+```
+
+### 캐싱
+
+LLM 호출 결과도 데이터베이스에 캐싱하여 재실행 시 비용 절감:
+
+```sql
+-- 미래 개선안
+CREATE TABLE llm_comments (
+    id INTEGER PRIMARY KEY,
+    code TEXT,
+    date TEXT,
+    comment TEXT,
+    model TEXT,
+    created_at TEXT
+);
+```
+
+## 📚 추가 자료
+
+- [Anthropic API 문서](https://docs.anthropic.com/claude/reference/)
+- [Claude 모델 가격](https://www.anthropic.com/api)
+- [Python SDK 저장소](https://github.com/anthropics/anthropic-sdk-python)
+
+## 🤝 문제 해결
+
+### LLM 호출이 실패해요
+
+**체크리스트:**
+1. API 키가 올바른지 확인: `echo $ANTHROPIC_API_KEY`
+2. 인터넷 연결 확인
+3. Anthropic 서비스 상태 확인: [status.anthropic.com](https://status.anthropic.com/)
+4. 크레딧 잔액 확인: [console.anthropic.com](https://console.anthropic.com/settings/credits)
+
+**디버그 모드:**
+```python
+# reporters/llm_generator.py에 추가
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+### 비용이 예상보다 많이 나와요
+
+**원인:**
+1. sonnet 모델 사용 (haiku의 15배)
+2. 과도한 재실행 (캐시 미사용)
+3. 많은 종목 분석
+
+**해결:**
+1. haiku 모델로 변경
+2. 캐시 활용 (강제 새로고침 `-f` 플래그 최소화)
+3. 종목 수 줄이기
 
 ---
 
-## 📝 종목별 상세 분석
-
-### 👌 삼성전자
-**현재가**: 165,800원 (-0.36%)
-
-삼성전자는 볼린저 밴드 기준 과매수 구간에 진입하여...
-```
-
-### HTML (LLM 활성화)
-시황 분석과 종목별 상세 분석이 카드 형태로 추가됩니다.
-
-## 문제 해결
-
-### API 키 오류
-```
-⚠️  ANTHROPIC_API_KEY가 설정되지 않았습니다. LLM 기능이 비활성화됩니다.
-```
-→ 환경 변수 설정 확인
-
-### anthropic 패키지 없음
-```
-⚠️  anthropic 패키지가 설치되지 않았습니다.
-```
-→ `pip install anthropic`
-
-### API 호출 실패
-```
-⚠️  Claude API 호출 실패 (삼성전자): timeout
-```
-→ 네트워크 확인, 재시도
-
-## LLM 없이 사용
-
-`config/report.yml`:
-```yaml
-use_llm: false  # LLM 비활성화
-```
-
-기본 템플릿 기반 코멘트만 사용하여 API 비용 없이 사용 가능합니다.
-
----
-
-**문서 버전**: 1.0  
-**최종 수정**: 2026-02-10
+**추가 질문이 있으시면 이슈를 열어주세요!** 🙋‍♂️

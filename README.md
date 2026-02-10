@@ -11,7 +11,19 @@
   - 일목균형표 (Ichimoku Cloud)
   - 추가 도구 확장 가능
 - **리포트 생성**: Markdown 또는 HTML 형식 리포트
+- **LLM 기반 해설** (선택): Claude API를 통한 자연어 분석 코멘트
 - **설정 기반**: YAML 설정 파일로 간편한 커스터마이징
+
+## 🚦 LLM 기능 관련 안내
+
+이 프로그램은 **LLM 없이도 완벽히 작동**합니다!
+
+- **기본 모드** (LLM 비활성화): 기술 지표 분석 + 템플릿 코멘트 제공
+- **LLM 모드** (선택): 위 기능 + Claude API 기반 자연어 해설 추가
+  - Anthropic API 키 필요 ([발급 방법](docs/LLM_GUIDE.md))
+  - $5 무료 크레딧 제공 (가입 시)
+  - 예상 비용: ~$0.003/종목 (claude-3-5-haiku 기준)
+- 자세한 내용: [LLM 기능 가이드](docs/LLM_GUIDE.md)
 
 ## 📁 프로젝트 구조
 
@@ -20,7 +32,7 @@ stock-analyzer/
 ├── config/                 # 설정 파일
 │   ├── stocks.yml         # 주식 목록
 │   ├── evaluators.yml     # 평가 도구 설정
-│   └── report.yml         # 리포트 설정
+│   └── report.yml         # 리포트 설정 (LLM 활성화 여부 포함)
 ├── data/                   # 데이터베이스
 │   └── stock_data.db      # SQLite DB (자동 생성)
 ├── src/                    # 소스 코드
@@ -32,10 +44,12 @@ stock-analyzer/
 │   │   └── ichimoku.py
 │   ├── reporters/         # 리포트 생성
 │   │   ├── markdown.py
-│   │   └── html.py
+│   │   ├── html.py
+│   │   └── llm_generator.py  # LLM 해설 생성
 │   ├── database.py        # DB 관리
 │   └── main.py            # 메인 프로그램
 ├── reports/                # 생성된 리포트
+├── docs/                   # 상세 문서
 ├── requirements.txt        # 의존성
 └── README.md
 ```
@@ -87,8 +101,18 @@ bollinger:
 
 ```yaml
 format: markdown  # markdown 또는 html
-output_dir: "reports"
+output_dir: "../reports"
+
+# LLM 기반 해설 (선택)
+use_llm: false  # true로 변경 시 ANTHROPIC_API_KEY 필요
+llm_model: "claude-3-5-haiku-20241022"
 ```
+
+**LLM 활성화 방법:**
+1. [Anthropic Console](https://console.anthropic.com/)에서 API 키 발급
+2. 환경변수 설정: `export ANTHROPIC_API_KEY=sk-ant-...`
+3. `config/report.yml`에서 `use_llm: true`로 변경
+4. 자세한 내용: [LLM 가이드](docs/LLM_GUIDE.md)
 
 ### 3. 실행
 
@@ -117,6 +141,22 @@ python main.py -m kr -d 2026-02-10
 
 - Markdown: `reports/kr_2026-02-10.md`
 - HTML: `reports/kr_2026-02-10.html`
+
+## 📊 분석 결과 예시
+
+### 기본 모드 (LLM 비활성화)
+```markdown
+| 종목명 | 볼린저밴드 | 일목균형표 | 평가 | 기타 |
+|--------|-----------|-----------|------|------|
+| 삼성전자 | 🔴 | 🟢 | 👌 | 💰 165,800원 | 과매수 80%, 매도 고려 | 골든크로스, 강세 |
+```
+
+### LLM 모드 (활성화 시)
+위 기본 정보 + 추가 해설:
+```
+💬 주가가 볼린저 밴드 상단에 위치하여 단기 과열 가능성이 있습니다. 
+   일목균형표는 긍정적이나 매도 타이밍 고려가 필요합니다...
+```
 
 ## 🔧 커스터마이징
 
@@ -244,6 +284,25 @@ if 'rsi' in enabled:
 | content | TEXT | 리포트 내용 |
 | format | TEXT | 형식 (markdown/html) |
 | created_at | TEXT | 생성 시간 |
+
+## 📖 상세 문서
+
+- [빠른 시작 가이드](QUICKSTART.md)
+- [프로젝트 개요](docs/OVERVIEW.md)
+- [설치 요구사항](docs/REQUIREMENTS.md)
+- [LLM 기능 가이드](docs/LLM_GUIDE.md) ⭐ **API 키 발급 방법 포함**
+- 모듈별 문서:
+  - [데이터 수집](docs/MODULE_COLLECTORS.md)
+  - [평가 도구](docs/MODULE_EVALUATORS.md)
+  - [리포터](docs/MODULE_REPORTERS.md)
+  - [데이터베이스](docs/MODULE_DATABASE.md)
+
+## 💡 사용 팁
+
+- **일일 분석 자동화**: 크론잡으로 매일 아침 실행
+- **HTML 리포트**: 모바일에서 보기 편함
+- **비용 절감**: LLM 없이 사용하면 완전 무료
+- **캐싱 활용**: 같은 날 재실행 시 빠른 속도
 
 ## ⚠️ 주의사항
 
