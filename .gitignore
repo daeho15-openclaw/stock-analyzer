@@ -39,8 +39,9 @@ Thumbs.db
 # 로그
 *.log
 
-# 환경 변수
+# 환경 변수 및 API 키
 .env
+config/report.local.yml
 
 # Jupyter Notebook
 .ipynb_checkpoints

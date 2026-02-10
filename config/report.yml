@@ -8,9 +8,11 @@ output_dir: "../reports"
 
 # LLM 기반 해설 생성 (Claude API)
 # Anthropic API key가 필요합니다 (https://console.anthropic.com/)
-# ANTHROPIC_API_KEY 환경변수로 설정
+# 1순위: 아래 api_key 설정
+# 2순위: ANTHROPIC_API_KEY 환경변수
 use_llm: false
 llm_model: "claude-haiku-4-5"  # claude-haiku-4-5, claude-sonnet-4-5
+api_key: ""  # 여기에 API 키 입력 (선택사항, 환경변수 사용 권장)
 
 # 리포트 파일명 형식 (날짜는 자동 삽입)
 filename_format: "{market}_{date}.{ext}"  # kr_2026-02-10.md

@@ -22,7 +22,9 @@
 - 10개 종목 일일 분석: ~$0.03/일 = ~$0.90/월
 - $5 크레딧으로 약 5-6개월 사용 가능
 
-### 2단계: 환경변수 설정
+### 2단계: API 키 설정
+
+**방법 A: 환경변수 설정 (권장)** 🌟
 
 **Linux/Mac:**
 ```bash
@@ -39,6 +41,22 @@ $env:ANTHROPIC_API_KEY="sk-ant-api-여기에-당신의-키-입력"
 echo 'export ANTHROPIC_API_KEY=sk-ant-api-여기에-당신의-키-입력' >> ~/.bashrc
 source ~/.bashrc
 ```
+
+**방법 B: 설정파일에 직접 입력**
+
+`config/report.yml` 편집:
+```yaml
+api_key: "sk-ant-api-여기에-당신의-키-입력"
+```
+
+⚠️ **보안 주의사항:**
+- 설정파일에 API 키를 입력하면 Git에 올라갈 수 있습니다!
+- **환경변수 사용을 강력히 권장합니다**
+- 또는 `config/report.local.yml`을 만들어서 사용 (gitignore에 포함됨)
+
+**우선순위:**
+1. `config/report.yml`의 `api_key` 설정
+2. `ANTHROPIC_API_KEY` 환경변수
 
 ### 3단계: 설정 파일 수정
 

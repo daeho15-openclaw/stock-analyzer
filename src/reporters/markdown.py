@@ -24,7 +24,8 @@ class MarkdownReporter:
         use_llm = self.config.get('use_llm', False)
         if use_llm:
             llm_model = self.config.get('llm_model', 'claude-haiku-4-5')
-            self.llm_generator = ClaudeCommentGenerator(model=llm_model)
+            api_key = self.config.get('api_key', '').strip() or None
+            self.llm_generator = ClaudeCommentGenerator(model=llm_model, api_key=api_key)
         else:
             self.llm_generator = None
             print("ℹ️  LLM 기능이 비활성화되었습니다.")

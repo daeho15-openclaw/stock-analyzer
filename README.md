@@ -110,7 +110,10 @@ llm_model: "claude-3-5-haiku-20241022"
 
 **LLM 활성화 방법:**
 1. [Anthropic Console](https://console.anthropic.com/)에서 API 키 발급
-2. 환경변수 설정: `export ANTHROPIC_API_KEY=sk-ant-...`
+2. API 키 설정 (택 1):
+   - **방법 A (권장)**: 환경변수 - `export ANTHROPIC_API_KEY=sk-ant-...`
+   - **방법 B**: 설정파일 - `config/report.yml`에 `api_key: "sk-ant-..."` 입력
+     - ⚠️ 주의: Git에 API 키가 올라가지 않도록 주의! 환경변수 사용 권장
 3. `config/report.yml`에서 `use_llm: true`로 변경
 4. 자세한 내용: [LLM 가이드](docs/LLM_GUIDE.md)
 

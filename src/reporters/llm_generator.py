@@ -9,16 +9,22 @@ from typing import Dict
 class ClaudeCommentGenerator:
     """Claude API를 사용한 자연어 해설 생성기"""
     
-    def __init__(self, model: str = "claude-haiku-4-5"):
+    def __init__(self, model: str = "claude-haiku-4-5", api_key: str = None):
         """
         Args:
             model: Claude 모델 (haiku 또는 sonnet)
+            api_key: Anthropic API 키 (우선순위: 파라미터 > 환경변수)
         """
         self.model = model
-        self.api_key = os.environ.get('ANTHROPIC_API_KEY')
+        
+        # API 키 우선순위: 파라미터 > 환경변수
+        self.api_key = api_key if api_key else os.environ.get('ANTHROPIC_API_KEY')
         
         if not self.api_key:
-            print("⚠️  ANTHROPIC_API_KEY가 설정되지 않았습니다. LLM 기능이 비활성화됩니다.")
+            print("⚠️  API 키가 설정되지 않았습니다. LLM 기능이 비활성화됩니다.")
+            print("    설정 방법:")
+            print("    1. config/report.yml에 api_key 설정")
+            print("    2. ANTHROPIC_API_KEY 환경변수 설정")
             self.enabled = False
         else:
             self.enabled = True
@@ -27,7 +33,10 @@ class ClaudeCommentGenerator:
             try:
                 from anthropic import Anthropic
                 self.client = Anthropic(api_key=self.api_key)
-                print(f"✅ Claude API 연결 성공 (모델: {self.model})")
+                
+                # API 키 출처 표시
+                source = "설정파일" if api_key else "환경변수"
+                print(f"✅ Claude API 연결 성공 (출처: {source}, 모델: {self.model})")
             except ImportError:
                 print("⚠️  anthropic 패키지가 설치되지 않았습니다. pip install anthropic")
                 self.enabled = False

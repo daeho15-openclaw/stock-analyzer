@@ -200,16 +200,25 @@ LLM 없이도 완벽히 작동하지만, 자연어 해설을 원한다면:
 2. API Keys 메뉴에서 키 생성
 3. `sk-ant-api...` 형식의 키 복사
 
-### 단계 2: 환경변수 설정
+### 단계 2: API 키 설정
+
+**방법 A (권장)**: 환경변수
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-api-여기에-당신의-키
 ```
+
+**방법 B**: 설정파일
+```yaml
+# config/report.yml
+api_key: "sk-ant-api-여기에-당신의-키"
+```
+⚠️ Git에 올라가지 않도록 주의! 환경변수 권장
 
 ### 단계 3: 설정 활성화
 `config/report.yml`:
 ```yaml
 use_llm: true
-llm_model: "claude-3-5-haiku-20241022"
+llm_model: "claude-haiku-4-5"
 ```
 
 ### 단계 4: 실행
