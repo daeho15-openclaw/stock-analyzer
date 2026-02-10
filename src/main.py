@@ -191,13 +191,25 @@ class StockAnalyzer:
         
         overall_emoji = BaseEvaluator.get_overall_emoji(overall_score)
         
-        # 현재가
+        # 현재가 및 등락률
         current_price = data[0]['close'] if data else 0
+        
+        # 전일 대비 등락 계산
+        price_change = 0
+        price_change_rate = 0.0
+        
+        if len(data) >= 2:
+            prev_price = data[1]['close']
+            price_change = current_price - prev_price
+            if prev_price > 0:
+                price_change_rate = (price_change / prev_price) * 100
         
         return {
             'code': code,
             'name': name,
             'current_price': current_price,
+            'price_change': price_change,
+            'price_change_rate': price_change_rate,
             'evaluations': evaluations,
             'overall_score': overall_score,
             'overall_emoji': overall_emoji

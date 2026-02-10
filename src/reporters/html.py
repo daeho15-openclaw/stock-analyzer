@@ -7,6 +7,14 @@ from typing import List, Dict
 from pathlib import Path
 
 
+"""
+HTML 리포트 생성기
+"""
+
+from typing import List, Dict
+from pathlib import Path
+
+
 class HTMLReporter:
     """HTML 형식 리포트 생성기"""
     
@@ -33,198 +41,207 @@ class HTMLReporter:
         """
         market_name = "한국" if market == "kr" else "미국"
         
-        # HTML 템플릿
-        html = f"""
-<!DOCTYPE html>
+        # HTML 헤더 및 스타일
+        html = f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{market_name} 주식 분석 리포트 - {date}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }}
-        h1 {{
-            color: #333;
-            border-bottom: 3px solid #4CAF50;
-            padding-bottom: 10px;
-        }}
-        .meta {{
-            color: #666;
-            margin-bottom: 20px;
-        }}
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }}
-        th, td {{
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }}
-        th {{
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
-        }}
-        tr:hover {{
-            background-color: #f5f5f5;
-        }}
-        .summary {{
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }}
-        .summary h2 {{
-            color: #4CAF50;
-            margin-top: 0;
-        }}
-        .summary ul {{
-            list-style-type: none;
-            padding-left: 0;
-        }}
-        .summary li {{
-            padding: 5px 0;
-        }}
-        .footer {{
-            text-align: center;
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-        }}
-        .emoji {{
-            font-size: 1.5em;
-        }}
+        body {{ font-family: 'Inter', 'Pretendard', sans-serif; background-color: #f8fafc; }}
     </style>
 </head>
-<body>
-    <h1>📊 {market_name} 주식 분석 리포트</h1>
-    <div class="meta">
-        <strong>날짜:</strong> {date}
-    </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>종목명</th>
-                <th>볼린저밴드</th>
-                <th>일목균형표</th>
-                <th>평가</th>
-                <th>기타</th>
-            </tr>
-        </thead>
-        <tbody>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">주식 분석 리포트</h1>
+                <p class="text-gray-500 mt-2">볼린저 밴드 및 일목균형표 기술적 지표 요약 ({market_name} 시장)</p>
+            </div>
+            <div class="text-sm text-gray-400">기준일: {date}</div>
+        </div>
+
+        <!-- 모바일 뷰 (카드 형태) -->
+        <div class="md:hidden space-y-4 mb-8">
 """
-        
-        # 종목별 행
+        # 모바일 카드 생성
         for result in results:
             name = result['name']
-            evals = result['evaluations']
+            code = result['code']
             
+            # 시장별 표시 순서 (미국은 코드가 메인)
+            if market == 'us':
+                main_text = code
+                sub_text = name
+            else:
+                main_text = name
+                sub_text = code
+
+            # 평가 결과 추출
+            evals = result.get('evaluations', {})
             bb = evals.get('bollinger', {})
-            bb_emoji = bb.get('emoji', '⚠️')
-            
+            bb_emoji = bb.get('emoji', '❓')
             ich = evals.get('ichimoku', {})
-            ich_emoji = ich.get('emoji', '⚠️')
+            ich_emoji = ich.get('emoji', '❓')
+            overall_emoji = result.get('overall_emoji', '❓')
             
-            overall = result.get('overall_emoji', '❓')
+            # 가격 정보
+            current_price = result.get('current_price', 0)
+            price_change_rate = result.get('price_change_rate', 0.0)
             
-            price = result.get('current_price', 0)
-            price_str = f"{price:,.0f}원" if market == "kr" else f"${price:,.2f}"
+            currency = "원" if market == "kr" else "$"
+            price_str = f"{current_price:,.0f}{currency}" if market == "kr" else f"${current_price:,.2f}"
             
-            bb_comment = bb.get('comment', '')
-            ich_comment = ich.get('comment', '')
+            change_sign = "+" if price_change_rate > 0 else ""
+            change_str = f"{change_sign}{price_change_rate:.2f}%"
             
-            other = f"💰 {price_str}<br>{bb_comment}<br>{ich_comment}"
+            if price_change_rate > 0:
+                price_color = "text-red-600"
+            elif price_change_rate < 0:
+                price_color = "text-blue-600"
+            else:
+                price_color = "text-gray-900"
+                
+            main_comment = bb.get('comment', '분석 중...')
             
             html += f"""
-            <tr>
-                <td><strong>{name}</strong></td>
-                <td class="emoji">{bb_emoji}</td>
-                <td class="emoji">{ich_emoji}</td>
-                <td class="emoji">{overall}</td>
-                <td>{other}</td>
-            </tr>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <div class="font-bold text-gray-900 text-lg">{main_text}</div>
+                        <div class="text-xs text-gray-400 font-mono">{sub_text}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="{price_color} font-bold">{price_str}</div>
+                        <div class="{price_color} text-xs">{change_str}</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 mb-3 bg-gray-50 p-3 rounded-lg">
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs text-gray-500 mb-1">볼린저</span>
+                        <span class="text-xl">{bb_emoji}</span>
+                    </div>
+                    <div class="flex flex-col items-center border-l border-gray-200 pl-4">
+                        <span class="text-xs text-gray-500 mb-1">일목</span>
+                        <span class="text-xl">{ich_emoji}</span>
+                    </div>
+                    <div class="flex flex-col items-center border-l border-gray-200 pl-4">
+                        <span class="text-xs text-gray-500 mb-1">종합</span>
+                        <span class="text-xl">{overall_emoji}</span>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    {main_comment}
+                </div>
+            </div>
+"""
+
+        html += """
+        </div>
+
+        <!-- 데스크탑 뷰 (테이블 형태) -->
+        <div class="hidden md:block bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-gray-100">
+                            <th class="px-6 py-4 font-semibold text-gray-700">종목명</th>
+                            <th class="px-6 py-4 font-semibold text-gray-700 text-center">볼린저밴드</th>
+                            <th class="px-6 py-4 font-semibold text-gray-700 text-center">일목균형표</th>
+                            <th class="px-6 py-4 font-semibold text-gray-700">평가 및 의견</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
 """
         
-        html += """
-        </tbody>
-    </table>
-    
-    <div class="summary">
-        <h2>📈 종합 평가</h2>
-        <ul>
+        # 데스크탑 행 생성
+        for result in results:
+            name = result['name']
+            code = result['code']
+            
+            # 시장별 표시 순서
+            if market == 'us':
+                main_text = code
+                sub_text = name
+            else:
+                main_text = name
+                sub_text = code
+            
+            # 평가 결과 추출
+            evals = result.get('evaluations', {})
+            
+            # 볼린저 밴드
+            bb = evals.get('bollinger', {})
+            bb_emoji = bb.get('emoji', '❓')
+            
+            # 일목균형표
+            ich = evals.get('ichimoku', {})
+            ich_emoji = ich.get('emoji', '❓')
+            
+            # 종합 평가
+            overall_emoji = result.get('overall_emoji', '❓')
+            
+            # 가격 정보
+            current_price = result.get('current_price', 0)
+            price_change = result.get('price_change', 0)
+            price_change_rate = result.get('price_change_rate', 0.0)
+            
+            # 가격 포맷팅
+            currency = "원" if market == "kr" else "$"
+            price_str = f"{current_price:,.0f}{currency}" if market == "kr" else f"${current_price:,.2f}"
+            
+            change_sign = "+" if price_change_rate > 0 else ""
+            change_str = f"{change_sign}{price_change_rate:.2f}%"
+            
+            # 등락 색상 (한국 기준: 상승=빨강, 하락=파랑)
+            if price_change_rate > 0:
+                price_color = "text-red-600"
+                change_color = "text-red-600"
+            elif price_change_rate < 0:
+                price_color = "text-blue-600"
+                change_color = "text-blue-600"
+            else:
+                price_color = "text-gray-900"
+                change_color = "text-gray-500"
+                
+            # 코멘트 선정 (가장 중요한 코멘트 하나)
+            # 1. 볼린저 코멘트 사용
+            main_comment = bb.get('comment', '분석 중...')
+            
+            html += f"""
+                        <tr class="hover:bg-blue-50/30 transition-colors">
+                            <td class="px-6 py-5">
+                                <div class="font-bold text-gray-900 text-lg">{main_text}</div>
+                                <div class="text-xs text-gray-400 font-mono">{sub_text}</div>
+                            </td>
+                            <td class="px-6 py-5 text-center text-xl">{bb_emoji}</td>
+                            <td class="px-6 py-5 text-center text-xl">{ich_emoji}</td>
+                            <td class="px-6 py-5">
+                                <span class="{price_color} font-bold block">{price_str} ({change_str})</span>
+                                <p class="text-sm text-gray-500 mt-1">{main_comment} {overall_emoji}</p>
+                            </td>
+                        </tr>
 """
-        
-        # 종합 평가
-        best = max(results, key=lambda x: x.get('overall_score', 0), default=None)
-        if best:
-            html += f"            <li><strong>최고 평가</strong> {best['overall_emoji']}: {best['name']}</li>\n"
-        
-        positive = [r for r in results if r.get('overall_score', 0) >= 2.75]
-        if positive:
-            names = ", ".join([r['name'] for r in positive])
-            html += f"            <li><strong>긍정적</strong> 👍: {names}</li>\n"
-        
-        neutral = [r for r in results if 2.0 <= r.get('overall_score', 0) < 2.75]
-        if neutral:
-            names = ", ".join([r['name'] for r in neutral])
-            html += f"            <li><strong>중립</strong> 👌: {names}</li>\n"
-        
-        negative = [r for r in results if r.get('overall_score', 0) < 2.0]
-        if negative:
-            names = ", ".join([r['name'] for r in negative])
-            html += f"            <li><strong>주의</strong> 👎: {names}</li>\n"
-        
+
         html += """
-        </ul>
-    </div>
-    
-    <div class="summary">
-        <h2>💡 시황 요약</h2>
-        <ul>
-"""
+                    </tbody>
+                </table>
+            </div>
+        </div>
         
-        # 통계
-        total = len(results)
-        strong_buy = len([r for r in results if r.get('overall_score', 0) >= 3.5])
-        buy = len([r for r in results if 2.75 <= r.get('overall_score', 0) < 3.5])
-        hold = len([r for r in results if 2.0 <= r.get('overall_score', 0) < 2.75])
-        sell = len([r for r in results if r.get('overall_score', 0) < 2.0])
-        
-        html += f"            <li>총 {total}개 종목 분석</li>\n"
-        if strong_buy > 0:
-            html += f"            <li>강한 매수 신호 🔥: {strong_buy}개</li>\n"
-        if buy > 0:
-            html += f"            <li>매수 신호 👍: {buy}개</li>\n"
-        if hold > 0:
-            html += f"            <li>중립/관망 👌: {hold}개</li>\n"
-        if sell > 0:
-            html += f"            <li>주의/매도 고려 👎: {sell}개</li>\n"
-        
-        html += """
-        </ul>
+        <div class="mt-6 text-center text-xs text-gray-400 leading-relaxed">
+            본 데이터는 기술적 분석 결과일 뿐, 투자의 책임은 본인에게 있습니다.<br>
+            볼린저 밴드는 20일 이동평균선과 ±2표준편차&#40;&sigma;&#41;를 기준으로 계산되었습니다.
+        </div>
     </div>
-    
-    <div class="footer">
-        ⚠️ 이는 기술적 분석 참고 자료이며, 투자 판단은 본인 책임하에 진행하세요.
-    </div>
+
 </body>
 </html>
 """
-        
         return html
     
     def save(self, market: str, date: str, content: str) -> str:
@@ -250,21 +267,34 @@ class HTMLReporter:
 
 
 if __name__ == "__main__":
-    # 테스트
+    # 테스트용 데이터
     sample_results = [
         {
-            'code': '005930',
-            'name': '삼성전자',
-            'current_price': 165800,
+            'code': '005930', 
+            'name': '삼성전자', 
+            'current_price': 75000, 
+            'price_change': 1500,
+            'price_change_rate': 2.04,
             'evaluations': {
-                'bollinger': {'score': 1.0, 'emoji': '🔴', 'comment': '과매수 80%, 매도 고려'},
-                'ichimoku': {'score': 4.0, 'emoji': '🟢', 'comment': '골든크로스, 강세'}
+                'bollinger': {'emoji': '👌', 'details': {'position': 45}, 'comment': '중립'},
+                'ichimoku': {'emoji': '☁️'}
             },
-            'overall_score': 2.5,
             'overall_emoji': '👌'
+        },
+        {
+            'code': '000660', 
+            'name': 'SK하이닉스', 
+            'current_price': 140000, 
+            'price_change': -2000,
+            'price_change_rate': -1.41,
+            'evaluations': {
+                'bollinger': {'emoji': '🔥', 'details': {'position': 90}, 'comment': '과매수 주의'},
+                'ichimoku': {'emoji': '📈'}
+            },
+            'overall_emoji': '🔥'
         }
     ]
     
     reporter = HTMLReporter()
-    report = reporter.generate("kr", "2026-02-10", sample_results)
-    reporter.save("kr", "2026-02-10", report)
+    print(reporter.generate('kr', '2026-02-10', sample_results))
+

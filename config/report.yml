@@ -1,7 +1,7 @@
 # 리포트 생성 설정
 
 # 리포트 형식 (markdown 또는 html)
-format: markdown
+format: html
 
 # 리포트 저장 경로
 output_dir: "../reports"
