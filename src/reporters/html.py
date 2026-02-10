@@ -16,7 +16,7 @@ class HTMLReporter:
             config: 리포트 설정
         """
         self.config = config or {}
-        self.output_dir = Path(self.config.get('output_dir', 'reports'))
+        self.output_dir = Path(self.config.get('output_dir', '../reports'))
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
     def generate(self, market: str, date: str, results: List[Dict]) -> str:
