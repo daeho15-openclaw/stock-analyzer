@@ -40,6 +40,10 @@ Claude API를 사용하여 자연어 해설을 자동 생성하는 기능입니�
 ## 설정 방법
 
 ### 1. Anthropic API 키 발급
+
+⚠️ **중요**: OpenClaw의 OAuth token은 Anthropic 공식 API에서 지원하지 않습니다!  
+별도로 API 키를 발급받아야 합니다.
+
 1. https://console.anthropic.com/ 접속
 2. 회원가입 및 로그인
 3. API Keys 메뉴에서 새 키 생성

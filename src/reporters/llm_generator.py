@@ -3,23 +3,68 @@ LLM 기반 리포트 해설 생성기 (Claude API)
 """
 
 import os
+import json
+from pathlib import Path
 from typing import List, Dict, Optional
+
+
+def load_openclaw_token() -> Optional[str]:
+    """OpenClaw의 Anthropic OAuth token 로드"""
+    try:
+        # OpenClaw auth-profiles.json 경로
+        home = Path.home()
+        auth_file = home / ".openclaw" / "agents" / "main" / "agent" / "auth-profiles.json"
+        
+        if not auth_file.exists():
+            return None
+        
+        with open(auth_file, 'r') as f:
+            data = json.load(f)
+        
+        # anthropic:default 프로필의 token 가져오기
+        token = data.get('profiles', {}).get('anthropic:default', {}).get('token')
+        
+        if token:
+            print("✅ OpenClaw Anthropic OAuth token 로드 성공")
+            return token
+        
+        return None
+    except Exception as e:
+        print(f"⚠️  OpenClaw token 로드 실패: {e}")
+        return None
 
 
 class ClaudeCommentGenerator:
     """Claude API를 사용한 자연어 해설 생성기"""
     
-    def __init__(self, model: str = "claude-3-5-haiku-20241022", api_key: Optional[str] = None):
+    def __init__(self, model: str = "claude-3-5-haiku-20241022", 
+                 api_key: Optional[str] = None, 
+                 auth_token: Optional[str] = None,
+                 use_openclaw_token: bool = False):
         """
         Args:
             model: Claude 모델 (haiku 또는 sonnet)
             api_key: Anthropic API 키 (없으면 환경변수에서 로드)
+            auth_token: Anthropic OAuth token (API 키보다 우선)
+            use_openclaw_token: OpenClaw의 OAuth token 자동 로드
         """
         self.model = model
+        
+        # 1순위: OpenClaw token (use_openclaw_token=True인 경우)
+        if use_openclaw_token:
+            self.auth_token = load_openclaw_token()
+        else:
+            self.auth_token = None
+        
+        # 2순위: 직접 전달된 OAuth token
+        if not self.auth_token:
+            self.auth_token = auth_token or os.environ.get('ANTHROPIC_AUTH_TOKEN')
+        
+        # 3순위: API key
         self.api_key = api_key or os.environ.get('ANTHROPIC_API_KEY')
         
-        if not self.api_key:
-            print("⚠️  ANTHROPIC_API_KEY가 설정되지 않았습니다. LLM 기능이 비활성화됩니다.")
+        if not self.auth_token and not self.api_key:
+            print("⚠️  ANTHROPIC_AUTH_TOKEN 또는 ANTHROPIC_API_KEY가 설정되지 않았습니다. LLM 기능이 비활성화됩니다.")
             self.enabled = False
         else:
             self.enabled = True
@@ -27,8 +72,15 @@ class ClaudeCommentGenerator:
             # Anthropic 클라이언트 로드
             try:
                 from anthropic import Anthropic
-                self.client = Anthropic(api_key=self.api_key)
-                print(f"✅ Claude API 연결 성공 (모델: {self.model})")
+                
+                # OAuth token이 있으면 우선 사용
+                if self.auth_token:
+                    self.client = Anthropic(auth_token=self.auth_token)
+                    print(f"✅ Claude API 연결 성공 (OAuth token, 모델: {self.model})")
+                else:
+                    self.client = Anthropic(api_key=self.api_key)
+                    print(f"✅ Claude API 연결 성공 (API key, 모델: {self.model})")
+                    
             except ImportError:
                 print("⚠️  anthropic 패키지가 설치되지 않았습니다. pip install anthropic")
                 self.enabled = False
