@@ -5,6 +5,7 @@
 from datetime import datetime
 from typing import List, Dict
 from pathlib import Path
+from .llm_generator import ClaudeCommentGenerator
 
 
 class MarkdownReporter:
@@ -18,6 +19,15 @@ class MarkdownReporter:
         self.config = config or {}
         self.output_dir = Path(self.config.get('output_dir', '../reports'))
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # LLM 생성기 초기화
+        use_llm = self.config.get('use_llm', False)
+        if use_llm:
+            llm_model = self.config.get('llm_model', 'claude-3-5-haiku-20241022')
+            self.llm_generator = ClaudeCommentGenerator(model=llm_model)
+        else:
+            self.llm_generator = None
+            print("ℹ️  LLM 기능이 비활성화되었습니다.")
     
     def generate(self, market: str, date: str, results: List[Dict]) -> str:
         """
@@ -144,6 +154,30 @@ class MarkdownReporter:
             lines.append(f"- 중립/관망 👌: {hold}개")
         if sell > 0:
             lines.append(f"- 주의/매도 고려 👎: {sell}개")
+        
+        # LLM 기반 시황 분석 (활성화된 경우)
+        if self.llm_generator and self.llm_generator.enabled:
+            lines.extend(["", "### 💬 시장 분석"])
+            market_summary = self.llm_generator.generate_market_summary(results, market)
+            lines.append(f"{market_summary}")
+        
+        # 종목별 상세 분석 (LLM 활성화 시)
+        if self.llm_generator and self.llm_generator.enabled:
+            lines.extend(["", "---", "", "## 📝 종목별 상세 분석", ""])
+            
+            for result in results:
+                stock_comment = self.llm_generator.generate_stock_analysis(result)
+                price = result.get('current_price', 0)
+                change_rate = result.get('price_change_rate', 0)
+                price_str = f"{price:,.0f}원" if market == "kr" else f"${price:,.2f}"
+                
+                lines.extend([
+                    f"### {result['overall_emoji']} {result['name']}",
+                    f"**현재가**: {price_str} ({change_rate:+.2f}%)",
+                    "",
+                    stock_comment,
+                    ""
+                ])
         
         # 푸터
         lines.extend([

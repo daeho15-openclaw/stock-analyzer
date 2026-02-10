@@ -1,10 +1,15 @@
 # 리포트 생성 설정
 
 # 리포트 형식 (markdown 또는 html)
-format: html
+format: markdown
 
 # 리포트 저장 경로
 output_dir: "../reports"
+
+# LLM 기반 해설 생성 (Claude API)
+# 활성화하려면 ANTHROPIC_API_KEY 환경변수 설정 필요
+use_llm: false
+llm_model: "claude-3-5-haiku-20241022"  # claude-3-5-haiku-20241022, claude-3-5-sonnet-20241022
 
 # 리포트 파일명 형식 (날짜는 자동 삽입)
 filename_format: "{market}_{date}.{ext}"  # kr_2026-02-10.md

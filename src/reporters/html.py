@@ -13,6 +13,7 @@ HTML 리포트 생성기
 
 from typing import List, Dict
 from pathlib import Path
+from .llm_generator import ClaudeCommentGenerator
 
 
 class HTMLReporter:
@@ -26,6 +27,15 @@ class HTMLReporter:
         self.config = config or {}
         self.output_dir = Path(self.config.get('output_dir', '../reports'))
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # LLM 생성기 초기화
+        use_llm = self.config.get('use_llm', False)
+        if use_llm:
+            llm_model = self.config.get('llm_model', 'claude-3-5-haiku-20241022')
+            self.llm_generator = ClaudeCommentGenerator(model=llm_model)
+        else:
+            self.llm_generator = None
+            print("ℹ️  LLM 기능이 비활성화되었습니다.")
     
     def generate(self, market: str, date: str, results: List[Dict]) -> str:
         """

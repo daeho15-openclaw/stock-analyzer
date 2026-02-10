@@ -15,6 +15,9 @@ python-dateutil>=2.8.2
 # 리포트 생성 (HTML)
 jinja2>=3.1.2
 
+# LLM (선택 사항)
+anthropic>=0.40.0
+
 # 통계 계산
 numpy>=1.24.0
 pandas>=2.0.0
