@@ -73,16 +73,16 @@ class BaseEvaluator(ABC):
             종합 평가 emoji
         """
         if avg_score >= 3.5:
-            return '🔥🔥'
+            return '🚀'
         elif avg_score >= 3.25:
-            return '🔥'
+            return '☀️'
         elif avg_score >= 2.75:
-            return '👍'
+            return '🌤️'
         elif avg_score >= 2.5:
-            return '👌'
+            return '☁️'
         elif avg_score >= 2.0:
-            return '🧐'
+            return '🌧️'
         elif avg_score >= 1.5:
-            return '👎'
+            return '⛈️'
         else:
-            return '💣'
+            return '🚨'

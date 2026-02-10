@@ -159,11 +159,7 @@ class MarkdownReporter:
         if sell > 0:
             lines.append(f"- 주의/매도 고려 👎: {sell}개")
         
-        # LLM 기반 시황 분석 (활성화된 경우)
-        if self.llm_generator and self.llm_generator.enabled:
-            lines.extend(["", "### 💬 시장 분석"])
-            market_summary = self.llm_generator.generate_market_summary(results, market)
-            lines.append(f"{market_summary}")
+        
         
         # 종목별 상세 분석 (LLM 활성화 시)
         if self.llm_generator and self.llm_generator.enabled:

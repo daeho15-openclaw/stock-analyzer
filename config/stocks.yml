@@ -37,6 +37,21 @@ us_stocks:
     market: "NYSE"
     note: "에너지"
 
+  - code: "AAPL"
+    name: "Apple Inc"
+    market: "NASDAQ"
+    note: "IT"
+
+  - code: "GOOGL"
+    name: "Alphabet Inc"
+    market: "NASDAQ"
+    note: "IT"
+
+  - code: "BLK"
+    name: "BlackRock"
+    market: "NYSE"
+    note: "금융"
+
 # 데이터 수집 설정
 data_config:
   days: 60  # 수집할 과거 데이터 일수
