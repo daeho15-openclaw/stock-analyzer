@@ -1,0 +1,29 @@
+# 평가 도구 설정
+
+# 활성화할 평가 도구 목록
+enabled_evaluators:
+  - bollinger
+  - ichimoku
+
+# 볼린저 밴드 설정
+bollinger:
+  period: 20
+  std_multiplier: 2.0
+  weight: 1.0  # 종합 평가 시 가중치
+
+# 일목균형표 설정
+ichimoku:
+  conversion_period: 9
+  base_period: 26
+  span_b_period: 52
+  weight: 1.0  # 종합 평가 시 가중치
+
+# 종합 평가 emoji 기준
+overall_scoring:
+  fire_fire: 3.5  # 🔥🔥
+  fire: 3.25      # 🔥
+  thumbs_up: 2.75 # 👍
+  ok_hand: 2.5    # 👌
+  thinking: 2.0   # 🧐
+  thumbs_down: 1.5 # 👎
+  bomb: 1.0       # 💣

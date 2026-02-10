@@ -1,0 +1,43 @@
+# 주식 목록 설정
+
+kr_stocks:
+  - code: "005930"
+    name: "삼성전자"
+    market: "KRX"
+    note: "반도체/전자"
+  
+  - code: "042660"
+    name: "한화오션"
+    market: "KRX"
+    note: "조선"
+
+us_stocks:
+  - code: "NVDA"
+    name: "NVIDIA Corporation"
+    market: "NASDAQ"
+    note: "반도체/AI"
+  
+  - code: "VLO"
+    name: "Valero Energy"
+    market: "NYSE"
+    note: "정유"
+  
+  - code: "VZ"
+    name: "Verizon Communications"
+    market: "NYSE"
+    note: "통신"
+  
+  - code: "PFE"
+    name: "Pfizer Inc."
+    market: "NYSE"
+    note: "제약"
+  
+  - code: "OXY"
+    name: "Occidental Petroleum"
+    market: "NYSE"
+    note: "에너지"
+
+# 데이터 수집 설정
+data_config:
+  days: 60  # 수집할 과거 데이터 일수
+  cache_days: 7  # 캐시 유효 기간 (일)

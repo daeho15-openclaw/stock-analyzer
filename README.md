@@ -1,0 +1,264 @@
+# 📊 Stock Analyzer - 주식 분석 자동화 프로그램
+
+확장 가능한 모듈형 주식 분석 시스템
+
+## ✨ 주요 기능
+
+- **데이터 수집**: FinanceDataReader를 사용한 주가 데이터 자동 수집
+- **캐싱/DB**: SQLite를 사용한 데이터 캐싱 및 히스토리 관리
+- **확장 가능한 평가 도구**: 독립적인 모듈로 구성된 기술적 분석 도구
+  - 볼린저 밴드 (Bollinger Bands)
+  - 일목균형표 (Ichimoku Cloud)
+  - 추가 도구 확장 가능
+- **리포트 생성**: Markdown 또는 HTML 형식 리포트
+- **설정 기반**: YAML 설정 파일로 간편한 커스터마이징
+
+## 📁 프로젝트 구조
+
+```
+stock-analyzer/
+├── config/                 # 설정 파일
+│   ├── stocks.yml         # 주식 목록
+│   ├── evaluators.yml     # 평가 도구 설정
+│   └── report.yml         # 리포트 설정
+├── data/                   # 데이터베이스
+│   └── stock_data.db      # SQLite DB (자동 생성)
+├── src/                    # 소스 코드
+│   ├── collectors/        # 데이터 수집
+│   │   └── fdr_collector.py
+│   ├── evaluators/        # 평가 도구
+│   │   ├── base.py
+│   │   ├── bollinger.py
+│   │   └── ichimoku.py
+│   ├── reporters/         # 리포트 생성
+│   │   ├── markdown.py
+│   │   └── html.py
+│   ├── database.py        # DB 관리
+│   └── main.py            # 메인 프로그램
+├── reports/                # 생성된 리포트
+├── requirements.txt        # 의존성
+└── README.md
+```
+
+## 🚀 설치 및 실행
+
+### 1. 의존성 설치
+
+```bash
+cd stock-analyzer
+pip install -r requirements.txt
+```
+
+### 2. 설정 파일 편집
+
+#### config/stocks.yml
+분석할 주식 종목 목록을 추가/수정합니다.
+
+```yaml
+kr_stocks:
+  - code: "005930"
+    name: "삼성전자"
+    market: "KRX"
+    note: "반도체/전자"
+
+us_stocks:
+  - code: "NVDA"
+    name: "NVIDIA"
+    market: "NASDAQ"
+    note: "반도체/AI"
+```
+
+#### config/evaluators.yml
+평가 도구를 활성화하고 파라미터를 조정합니다.
+
+```yaml
+enabled_evaluators:
+  - bollinger
+  - ichimoku
+
+bollinger:
+  period: 20
+  std_multiplier: 2.0
+  weight: 1.0
+```
+
+#### config/report.yml
+리포트 형식과 출력 설정을 지정합니다.
+
+```yaml
+format: markdown  # markdown 또는 html
+output_dir: "reports"
+```
+
+### 3. 실행
+
+```bash
+cd src
+
+# 한국 주식 분석
+python main.py -m kr
+
+# 미국 주식 분석
+python main.py -m us
+
+# 전체 시장 분석
+python main.py -m all
+
+# 캐시 무시하고 강제 업데이트
+python main.py -m kr -f
+
+# 특정 날짜 분석
+python main.py -m kr -d 2026-02-10
+```
+
+### 4. 리포트 확인
+
+생성된 리포트는 `reports/` 디렉토리에 저장됩니다.
+
+- Markdown: `reports/kr_2026-02-10.md`
+- HTML: `reports/kr_2026-02-10.html`
+
+## 🔧 커스터마이징
+
+### 새로운 평가 도구 추가하기
+
+1. `src/evaluators/` 에 새 파일 생성 (예: `rsi.py`)
+
+```python
+from .base import BaseEvaluator
+from typing import List, Dict, Tuple
+
+class RSIEvaluator(BaseEvaluator):
+    def __init__(self, config: Dict = None):
+        super().__init__(config)
+        self.period = self.config.get('period', 14)
+    
+    def evaluate(self, data: List[Dict]) -> Tuple[float, str, str]:
+        # RSI 계산 및 평가 로직
+        score = 3.0
+        emoji = '🟡'
+        comment = 'RSI 분석 결과'
+        return score, emoji, comment
+    
+    def get_details(self, data: List[Dict]) -> Dict:
+        # 상세 정보 반환
+        return {'rsi': 50.0}
+```
+
+2. `config/evaluators.yml`에 설정 추가
+
+```yaml
+enabled_evaluators:
+  - bollinger
+  - ichimoku
+  - rsi
+
+rsi:
+  period: 14
+  weight: 1.0
+```
+
+3. `src/evaluators/__init__.py`에 등록
+
+```python
+from .rsi import RSIEvaluator
+__all__ = ['BaseEvaluator', 'BollingerEvaluator', 'IchimokuEvaluator', 'RSIEvaluator']
+```
+
+4. `src/main.py`의 `init_evaluators()` 메서드에 추가
+
+```python
+if 'rsi' in enabled:
+    config = self.evaluators_config.get('rsi', {})
+    evaluators.append(RSIEvaluator(config))
+```
+
+### 새로운 리포터 추가하기
+
+1. `src/reporters/` 에 새 파일 생성 (예: `pdf.py`)
+2. `generate()` 와 `save()` 메서드 구현
+3. `src/main.py`에서 리포터 선택 로직 수정
+
+## 📊 평가 기준
+
+### 볼린저 밴드
+- 🟢 4점: 하단 근처 (0~25%), 강한 매수
+- 🟡 3점: 중립 (25~50%), 약한 매수
+- 🟠 2점: 과열 (50~80%), 약한 매도
+- 🔴 1점: 과매수 (80~100%), 강한 매도
+
+### 일목균형표
+- 🟢 4점: 골든크로스 + 구름 위, 강한 매수
+- 🟡 3점: 중립, 추세 전환 중
+- 🟠 2점: 하락 조짐
+- 🔴 1점: 데드크로스 + 구름 아래, 강한 매도
+
+### 종합 평가
+- 🔥🔥: 3.5~4.0점 (매우 좋음)
+- 🔥: 3.25~3.5점 (좋음)
+- 👍: 2.75~3.25점 (긍정적)
+- 👌: 2.5~2.75점 (중립)
+- 🧐: 2.0~2.5점 (주의)
+- 👎: 1.5~2.0점 (부정적)
+- 💣: 1.0~1.5점 (매우 나쁨)
+
+## 🗄️ 데이터베이스 스키마
+
+### stock_prices
+주가 데이터 저장
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER | 기본 키 |
+| code | TEXT | 종목 코드 |
+| market | TEXT | 시장 |
+| date | TEXT | 날짜 |
+| open | REAL | 시가 |
+| high | REAL | 고가 |
+| low | REAL | 저가 |
+| close | REAL | 종가 |
+| volume | INTEGER | 거래량 |
+| created_at | TEXT | 생성 시간 |
+
+### evaluations
+평가 결과 저장
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER | 기본 키 |
+| code | TEXT | 종목 코드 |
+| date | TEXT | 날짜 |
+| evaluator | TEXT | 평가 도구 |
+| score | REAL | 점수 |
+| details | TEXT | 상세 정보 (JSON) |
+| created_at | TEXT | 생성 시간 |
+
+### reports
+생성된 리포트 저장
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | INTEGER | 기본 키 |
+| market | TEXT | 시장 |
+| date | TEXT | 날짜 |
+| content | TEXT | 리포트 내용 |
+| format | TEXT | 형식 (markdown/html) |
+| created_at | TEXT | 생성 시간 |
+
+## ⚠️ 주의사항
+
+- 이 프로그램은 기술적 분석 참고 자료를 제공하는 도구입니다.
+- 실제 투자 결정은 본인의 판단과 책임하에 진행하세요.
+- FinanceDataReader API 사용 시 과도한 요청을 피하세요. (내장된 딜레이: 0.5초)
+
+## 📝 라이선스
+
+MIT License
+
+## 🤝 기여
+
+이슈 제보 및 풀 리퀘스트 환영합니다!
+
+---
+
+**Happy Trading! 📈**

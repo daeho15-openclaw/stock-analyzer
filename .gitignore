@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# 데이터베이스
+data/*.db
+data/*.db-journal
+
+# 리포트 (선택: 리포트도 버전 관리하려면 주석 처리)
+reports/*.md
+reports/*.html
+reports/*.pdf
+
+# 백업 파일
+*_backup.*
+*.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 로그
+*.log
+
+# 환경 변수
+.env
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 테스트
+test.db
+*.test.db

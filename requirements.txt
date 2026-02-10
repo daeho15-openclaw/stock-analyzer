@@ -1,0 +1,20 @@
+# 주식 분석 프로그램 의존성
+
+# 데이터 수집
+finance-datareader>=0.9.50
+
+# 데이터베이스
+# SQLite는 Python 기본 내장
+
+# 설정 파일
+pyyaml>=6.0
+
+# 날짜/시간
+python-dateutil>=2.8.2
+
+# 리포트 생성 (HTML)
+jinja2>=3.1.2
+
+# 통계 계산
+numpy>=1.24.0
+pandas>=2.0.0
